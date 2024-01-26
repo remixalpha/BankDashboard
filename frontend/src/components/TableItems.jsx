@@ -1,21 +1,39 @@
-import { Fragment, useEffect, useState } from "react";
-// Component
 import { Dialog, Transition } from "@headlessui/react";
-import { Callout } from "@radix-ui/themes";
+import { Table } from "@radix-ui/themes";
+import React, { Fragment, useEffect, useRef, useState } from "react";
+import defaultProfileImage from "../assets/Images/Person.png";
+import DropDown from "./DropDown";
+// Icon
+import {
+  ExclamationTriangleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { Pagination } from "antd";
 // Icons
-import { CheckIcon } from "@heroicons/react/20/solid";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { BiImageAdd } from "react-icons/bi";
 import { LuPencil } from "react-icons/lu";
 import { PiUploadSimpleThin, PiXLight } from "react-icons/pi";
 
 // Api
-import { addData, fetchEmployeeData } from "../api/api";
+import {
+  deleteData,
+  fetchEmployeeData,
+  fetchEmployeeDataWithLimit,
+  updateData,
+} from "../api/api";
 
-export default function AddItems({ open, setOpen }) {
+export default function TableItems({ pageSize, searchQuery }) {
+  const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [empIdToDelete, setEmpIdToDelete] = useState(null);
+  const [empIdToUpdate, setEmpIdToUpdate] = useState(null);
+  const cancelButtonRef = useRef(null);
   // Api
-  const [Data, setData] = useState([]);
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const [data, setData] = useState([]);
   //   InputField selection
   const [Name, setName] = useState("");
   const [Email, setEmail] = useState("");
@@ -31,6 +49,22 @@ export default function AddItems({ open, setOpen }) {
   const [isMessageShown, setIsMessageShown] = useState(false);
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const onChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleEditMenuOpen = (employee) => {
+    console.log("Selected Employee For Updating:", employee);
+    setEmpIdToUpdate(employee);
+    setOpen(true);
+  };
+
+  const handleDeleteMenuOpen = (employee) => {
+    console.log("Selected Employee ID For Deleting:", employee.empId);
+    setEmpIdToDelete(employee.empId);
+    setOpenDelete(true);
+  };
 
   // Image Change
   const handleImageChange = (event) => {
@@ -64,87 +98,182 @@ export default function AddItems({ open, setOpen }) {
     setGender(event.target.value);
   };
 
-  // Handle Adding Data
-  const handleAdd = async (event) => {
-    event.preventDefault();
+  // API Part
+
+  useEffect(() => {
+    // Fetch Data
+    const fetchData = async () => {
+      try {
+        const data = await fetchEmployeeDataWithLimit(
+          currentPage,
+          pageSize,
+          searchQuery
+        );
+        setData(data.data);
+        setTotalCount(data.totalCount);
+        console.log("Data fetched successfully:", data);
+      } catch (error) {
+        console.error("Error fetching Employee Data:", error);
+      }
+    };
+
+    // Call the fetchData function
+    fetchData();
+    console.log("Data fetched To Populate :", empIdToUpdate);
+    // Populate input fields when empIdToUpdate changes
+    if (empIdToUpdate) {
+      setName(empIdToUpdate.name || "");
+      setEmail(empIdToUpdate.email || "");
+      setPhoneNo(empIdToUpdate.phoneNumber || "");
+      setGender(empIdToUpdate.gender || "");
+      // Assuming there's an image property in empIdToUpdate, update accordingly
+      setImage(empIdToUpdate.image || "https://via.placeholder.com/150");
+    }
+  }, [currentPage, pageSize, searchQuery, empIdToUpdate]);
+
+  const handleDelete = async (employeeId) => {
     try {
-      const newData = {
+      console.log("Deleting employee with ID:", employeeId);
+
+      const response = await deleteData(employeeId);
+
+      console.log("Response data:", response);
+
+      if (response.status === "SUCCESS") {
+        setIsSuccess(true);
+        setMessage(response.message || "Employee Deleted successfully!");
+      } else {
+        setIsSuccess(false);
+        setMessage(response.message || "Something went wrong");
+      }
+
+      const updatedData = await fetchEmployeeDataWithLimit(
+        currentPage,
+        pageSize,
+        searchQuery
+      );
+      setData(updatedData.data);
+      setTotalCount(updatedData.totalCount);
+    } catch (error) {
+      console.error("Error while Deleting employee:", error);
+      setIsSuccess(false);
+      setMessage("Something went wrong. Please try again.");
+    } finally {
+      setShowMessage(true);
+      setOpenDelete(false);
+      setEmpIdToDelete(null);
+      setIsMessageShown(true);
+
+      // Hide the message after a certain duration if needed
+      setTimeout(() => {
+        setShowMessage(false);
+        setIsMessageShown(false);
+      }, 5000);
+    }
+  };
+
+  const handleUpdate = async () => {
+    try {
+      console.log("Updated employee with ID:", empIdToUpdate.empId);
+
+      const updatedEmployeeData = {
         name: Name,
         email: Email,
         phoneNumber: PhoneNo,
         gender: Gender,
       };
 
-      console.log("Data:", newData);
-      const response = await addData(newData);
-      console.log("Response data:", response.result);
+      const response = await updateData(empIdToUpdate, updatedEmployeeData);
+      const updatedData = await fetchEmployeeData();
 
-      if (response.result === "SUCCESS") {
+      console.log("Response data:", response);
+      if (response.status === "SUCCESS") {
         setIsSuccess(true);
-        setMessage("Employee added successfully!");
+        setMessage(response.message || "Employee Updated successfully!");
       } else {
         setIsSuccess(false);
-        setMessage("Something went wrong");
+        setMessage(response.message || "Something went wrong");
       }
 
-      const updatedData = await fetchEmployeeData();
-      setData(updatedData);
+      setData(updatedData.data);
+      setTotalCount(updatedData.totalCount);
     } catch (error) {
-      console.error("Error adding Employee:", error);
-      setIsSuccess(false);
-      setMessage("Something went wrong. Please try again.");
+      console.error("Error updating menu:", error);
     } finally {
       setShowMessage(true);
       setOpen(false);
+      setEmpIdToUpdate(null);
       setIsMessageShown(true);
+
       // Hide the message after a certain duration if needed
       setTimeout(() => {
         setShowMessage(false);
         setIsMessageShown(false);
       }, 5000);
-      // Reset to the default
-      setName("");
-      setEmail("");
-      setPhoneNo("");
-      setGender("");
-      // Reset other form fields as needed
-      setFileInputKey((prevKey) => prevKey + 1);
     }
   };
 
-  useEffect(() => {
-    if (isMessageShown) {
-      const reloadTimeout = setTimeout(() => {
-        window.location.reload();
-      }, 5000);
-
-      return () => clearTimeout(reloadTimeout);
-    }
-  }, [isMessageShown]);
-
   return (
     <>
-      {showMessage && (
-        <div className="absolute bottom-[13rem] right-55 flex justify-center items-center scale-110 h-full w-full">
-          {isSuccess ? (
-            <Callout.Root color="green">
-              <Callout.Icon>
-                <CheckIcon className="h-5 w-5" />
-              </Callout.Icon>
-              <Callout.Text>{message}</Callout.Text>
-            </Callout.Root>
-          ) : (
-            <Callout.Root color="red" role="alert">
-              <Callout.Icon>
-                <ExclamationTriangleIcon className="h-5 w-5" />
-              </Callout.Icon>
-              <Callout.Text>{message}</Callout.Text>
-            </Callout.Root>
-          )}
-        </div>
-      )}
+      <div className="container mx-auto space-y-4">
+        <div className="">
+          <Table.Root variant="ghost">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Image</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Phone No</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Gender</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell> </Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
 
-      {/* Add */}
+            <Table.Body className="relative font-poppins ">
+              {data.map((employee) => (
+                <Table.Row
+                  className="hover:bg-gray-50  cursor-pointer"
+                  key={employee.empId}
+                >
+                  <Table.Cell className="">
+                    {/* Render the image based on employee's name */}
+                    <img
+                      src={`path-to-your-upload-folder/${employee.empName}.jpg`} // Replace with the correct path and file extension
+                      alt={employee.empName}
+                      onError={(e) => {
+                        // Handle image not found by displaying a default image
+                        e.target.src = defaultProfileImage;
+                      }}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  </Table.Cell>
+                  <Table.Cell className="">{employee.empName}</Table.Cell>
+                  <Table.Cell className="">{employee.empEmail}</Table.Cell>
+                  <Table.Cell className="">{employee.empPhoneNo}</Table.Cell>
+                  <Table.Cell className="">{employee.EmpGender}</Table.Cell>
+                  <Table.Cell>
+                    <DropDown
+                      onEdit={handleEditMenuOpen}
+                      onDelete={handleDeleteMenuOpen}
+                      employeeId={employee.empId}
+                      employee={employee}
+                    />
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </div>
+      </div>
+      <div className="mt-4 items-end justify-end flex">
+        <Pagination
+          current={currentPage}
+          onChange={onChange}
+          pageSize={pageSize}
+          total={totalCount}
+        />
+      </div>
+      {/* Edit */}
       <Transition.Root show={open} as={Fragment}>
         <Dialog
           as="div"
@@ -188,13 +317,18 @@ export default function AddItems({ open, setOpen }) {
                     <div className="w-full items-center justify-center relative mx-12  sm:grid-cols-12 lg:gap-x-8">
                       <div className="sm:col-span-8 ">
                         <p className="text-3xl font-bold antialiased tracking-tight text-slate-900">
-                          Add New Employee
+                          Edit Employee
                         </p>
                         <section
                           aria-labelledby="options-heading"
                           className="mt-10"
                         >
-                          <form onSubmit={handleAdd}>
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              handleUpdate();
+                            }}
+                          >
                             <div className="grid items-center grid-cols-1 gap-y-8">
                               {/* Image Upload */}
                               <div className="flex justify-center cursor-pointer col-2">
@@ -368,6 +502,10 @@ export default function AddItems({ open, setOpen }) {
                                   <button
                                     type="reset"
                                     className="flex flex-row items-center justify-center px-3 py-2 space-x-2 text-white transition-all duration-300 bg-secondBlack shadow-lg cursor-pointer group rounded-xl"
+                                    onClick={() => {
+                                      setOpen(false);
+                                      setEmpIdToUpdate(null);
+                                    }}
                                   >
                                     <PiXLight className="w-6 h-6 p-1 text-white transition-transform duration-300 ease-in-out transform group-hover:-translate-y-1" />
                                     <span className="relative antialiased tracking-normal font-sans text-sm leading-[1.3]">
@@ -382,7 +520,7 @@ export default function AddItems({ open, setOpen }) {
                                   >
                                     <PiUploadSimpleThin className="w-6 h-6 p-1 text-white transition-transform duration-300 ease-in-out transform group-hover:-translate-y-1" />
                                     <span className="relative antialiased tracking-normal font-sans text-sm  leading-[1.3]">
-                                      Save
+                                      Update
                                     </span>
                                   </button>
                                 </div>
@@ -392,6 +530,86 @@ export default function AddItems({ open, setOpen }) {
                         </section>
                       </div>
                     </div>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition.Root>
+
+      {/* Delete */}
+      <Transition.Root show={openDelete} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-10"
+          initialFocus={cancelButtonRef}
+          onClose={setOpenDelete}
+        >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              >
+                <Dialog.Panel className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-lg transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                  <div className="bg-white px-4 pb-4 pt-5 sm:p-8 sm:pb-12">
+                    <div className="sm:flex  sm:items-start">
+                      <div className="mx-auto flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-14 sm:w-14">
+                        <ExclamationTriangleIcon
+                          className="h-8 w-8 text-red-600"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <div className="mt-3  text-center sm:ml-4 sm:mt-0 sm:text-left">
+                        <Dialog.Title
+                          as="h3"
+                          className="text-2xl mr-12 font-semibold leading-8 text-gray-900"
+                        >
+                          Are you sure do you want to delete this ?
+                        </Dialog.Title>
+                        <div className="mt-2">
+                          <p className="text-md text-gray-500">
+                            This action will delete the record. Do you want to
+                            continue ?
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 px-4 py-8 sm:flex sm:flex-row-reverse sm:px-6">
+                    <button
+                      type="submit"
+                      className="inline-flex w-full justify-center rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 ease-in-out hover:scale-110  hover:bg-red-500 sm:ml-3 sm:w-auto"
+                      onClick={() => handleDelete(empIdToDelete)}
+                    >
+                      Delete
+                    </button>
+                    <button
+                      type="button"
+                      className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-lg transition-all duration-300 ease-in-out hover:scale-110 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                      onClick={() => setOpenDelete(false)}
+                      ref={cancelButtonRef}
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>

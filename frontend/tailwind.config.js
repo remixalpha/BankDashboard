@@ -126,6 +126,7 @@ export const theme = {
       inset: "inset 0px 18px 22px",
       darkinset: "0px 4px 4px inset",
       bottom: "0 4px 8px 0 rgba(0, 0, 0, 0.2)",
+      tooltip: " 0 5px 10px rgba(0, 0, 0, 0.3)",
     },
     borderRadius: {
       primary: "2rem",
@@ -152,6 +153,11 @@ export const theme = {
     white: "#ffffff",
     black: "#111",
     lightPrimary: "#F4F7FE",
+    buttonColor: "#1b3bbb",
+    primaryBlack: "#0A0A0A",
+    secondBlack: "#232323",
+    thirdBlack: "#696969",
+
     slate: {
       50: "#f8fafc",
       100: "#f1f5f9",

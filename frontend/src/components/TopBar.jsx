@@ -1,11 +1,12 @@
-import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import React, { Fragment, useState } from "react";
 import { BsPerson } from "react-icons/bs";
+import { FiLayout, FiSearch, FiSettings } from "react-icons/fi";
+
 import { IoSettingsOutline } from "react-icons/io5";
 import { PiSignOut } from "react-icons/pi";
 import { RiHome5Fill, RiMastercardLine } from "react-icons/ri";
-import { FiLayout, FiSettings } from "react-icons/fi";
 import Person from "../assets/Images/Person.png";
 
 function classNames(...classes) {
@@ -38,26 +39,54 @@ const navigation = [
   },
 ];
 
-export default function Header() {
+export default function TopBar({ onSearch }) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setSearchQuery(value);
+    // Log the searchQuery value for debugging purposes
+    console.log("Search query:", value);
+
+    // Call the onSearch prop to notify the parent component about the search query change
+    onSearch(value);
+  };
+
   return (
     <>
-      <div className="min-h-full">
-        <Disclosure as="nav" className="bg-white">
+      <div className=" min-h-full">
+        <Disclosure as="nav" className=" bg-white mt-3 rounded-2xl  pb-4 mr-6">
           {({ open }) => (
             <>
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-end">
                   {/* Options -- Start-- */}
-                  <div className="hidden md:block">
+                  <div className="hidden md:flex justify-center items-center">
+                    {/* Search */}
+                    <div className="relative mt-[3px] flex h-[61px] w-[300px] flex-grow items-center justify-around gap-2 rounded-full  px-2 py-2 md:w-[365px] md:flex-grow-0 md:gap-1 xl:w-[320px] xl:gap-2">
+                      <div className="flex h-full items-center rounded-full border text-navy-700 pl-4 transition-transform transform z-10 ">
+                        <p className="text-xl rounded-full px-2 py-2 cursor-pointer z-30">
+                          <FiSearch className="h-5 w-5 text-secondBlack " />
+                        </p>
+                        <input
+                          type="text"
+                          placeholder="Search..."
+                          value={searchQuery}
+                          onChange={handleSearchChange}
+                          className="block h-full rounded-full  text-sm font-normal text-secondBlack outline-none placeholder:!text-gray-400 sm:w-fit"
+                        />
+                      </div>
+                    </div>
                     <div className="ml-4 flex items-center md:ml-6">
                       {/* Profile dropdown */}
                       <Menu as="div" className="relative ml-3">
                         <div>
-                          <Menu.Button className="relative flex rounded-full bg-slate-200 text-sm mt-4 ">
+                          <Menu.Button className="relative flex rounded-full bg-slate-200 text-sm  ">
                             <span className="absolute -inset-1.5" />
                             <span className="sr-only">Open user menu</span>
+
                             <img
-                              className="h-12 w-12 rounded-full object-cover"
+                              className="h-12 w-12 rounded-full object-cover shadow-xl shadow-shadow-500 "
                               src={Person}
                               alt=""
                             />
@@ -72,15 +101,39 @@ export default function Header() {
                           leaveFrom="transform opacity-100 scale-100"
                           leaveTo="transform opacity-0 scale-95"
                         >
-                          <Menu.Items className="absolute right-0 z-10 mt-8 w-48 origin-top-right rounded-2xl py-4 px-2  bg-white shadow-lg ">
+                          <Menu.Items className="absolute  right-0 z-50 mt-8 w-64 origin-top-right rounded-2xl py-4 px-2  bg-secondBlack shadow-lg ">
+                            <Menu.Item>
+                              <div className="nav-item  top-16 bg-secondBlack pt-2 rounded-lg ">
+                                <div className="flex flex-col text-center  items-center justify-center gap-5  border-color border-b-1 pb-6">
+                                  <img
+                                    className=" object-cover rounded-full h-24 w-24"
+                                    src={Person}
+                                    alt="user-profile"
+                                  />
+                                  <div>
+                                    <p className="font-semibold text-white text-xl">
+                                      Micheal Robert
+                                    </p>
+                                    <p className="text-gray-500 text-sm">
+                                      Administrator
+                                    </p>
+                                    <p className="text-gray-500 text-sm">
+                                      info@source.com
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </Menu.Item>
+
+                            {/* Manus */}
                             <Menu.Item>
                               {({ active }) => (
                                 <div
                                   className={classNames(
                                     active
-                                      ? "bg-indigo-500 text-white scale-110 shadow-xl rounded-lg"
+                                      ? "bg-white text-secondBlack scale-110 shadow-xl rounded-lg"
                                       : "",
-                                    "flex flex-row justify-start items-center px-4  mx-2 my-2  text-sm text-slate-700 transition-all duration-300 ease-in-out"
+                                    "flex flex-row justify-start items-center px-4  mx-4 my-2  text-sm text-lightPrimary  rounded-lg transition-all duration-300 ease-in-out"
                                   )}
                                 >
                                   <BsPerson
@@ -98,9 +151,9 @@ export default function Header() {
                                 <div
                                   className={classNames(
                                     active
-                                      ? "bg-indigo-500 text-white scale-110 shadow-xl rounded-lg"
+                                      ? "bg-white text-secondBlack scale-110 shadow-xl rounded-lg"
                                       : "",
-                                    "flex flex-row justify-start items-center px-4  mx-2 my-2  text-sm text-slate-700 transition-all duration-300 ease-in-out"
+                                    "flex flex-row justify-start items-center px-4  mx-4 my-2  text-sm text-lightPrimary  rounded-lg transition-all duration-300 ease-in-out"
                                   )}
                                 >
                                   <IoSettingsOutline
@@ -118,9 +171,9 @@ export default function Header() {
                                 <div
                                   className={classNames(
                                     active
-                                      ? "bg-indigo-500 text-white scale-110 shadow-xl rounded-lg"
+                                      ? "bg-white text-secondBlack scale-110 shadow-xl rounded-lg"
                                       : "",
-                                    "flex flex-row justify-start items-center px-4  mx-2 my-2  text-sm text-slate-700 transition-all duration-300 ease-in-out"
+                                    "flex flex-row justify-start items-center px-4  mx-4 my-2  text-sm text-lightPrimary  rounded-lg transition-all duration-300 ease-in-out"
                                   )}
                                 >
                                   <PiSignOut

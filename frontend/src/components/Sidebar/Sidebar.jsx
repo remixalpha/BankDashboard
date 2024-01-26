@@ -1,37 +1,37 @@
-import React from "react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./Sidebar.scss";
 
+import { FiLayout, FiSettings } from "react-icons/fi";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { MdOutlineHorizontalRule } from "react-icons/md";
 import { RiHome5Fill, RiMastercardLine } from "react-icons/ri";
-import { FiLayout, FiSettings, FiMenu } from "react-icons/fi";
-
-import Logo from "../../assets/Images/Logo.png";
+import Logo from "../../assets/Images/Logo-remove.png";
 
 const sidebarNavItems = [
   {
-    display: "Home",
+    display: "Dashboard",
     icon: <RiHome5Fill />,
     to: "/",
-    section: "",
+    section: "Dashboard",
   },
   {
-    display: "Master",
+    display: "Employee Directory",
     icon: <RiMastercardLine />,
-    to: "/master",
-    section: "master",
+    to: "",
+    section: "Employee",
   },
   {
-    display: "Transactions",
+    display: "Attendance",
     icon: <FiLayout />,
-    to: "/transactions",
-    section: "transactions",
+    to: "",
+    section: "Attendance",
   },
   {
-    display: "Settings",
+    display: "Leave Management",
     icon: <FiSettings />,
-    to: "/settings",
-    section: "settings",
+    to: "",
+    section: "Leave",
   },
 ];
 
@@ -44,13 +44,27 @@ export default function Sidebar() {
   const location = useLocation();
 
   useEffect(() => {
-    setTimeout(() => {
+    const setIndicatorHeight = () => {
       const sidebarItem = sidebarRef.current.querySelector(
         ".sidebar__menu__item"
       );
-      indicatorRef.current.style.height = `${sidebarItem.clientHeight}px`;
-      setStepHeight(sidebarItem.clientHeight);
-    }, 50);
+
+      if (sidebarItem) {
+        indicatorRef.current.style.height = `${sidebarItem.clientHeight}px`;
+        setStepHeight(sidebarItem.clientHeight);
+      }
+    };
+
+    // Call the function once on mount
+    setIndicatorHeight();
+
+    // Call the function on window resize
+    window.addEventListener("resize", setIndicatorHeight);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", setIndicatorHeight);
+    };
   }, []);
 
   useEffect(() => {
@@ -63,64 +77,79 @@ export default function Sidebar() {
 
   const toggleSidebar = () => {
     const body = document.body;
-    if (!isSidebarCollapsed) {
-      body.style.paddingLeft = "140px";
-    } else {
-      body.style.paddingLeft = "350px";
-    }
+    body.style.paddingLeft = isSidebarCollapsed ? "350px" : "140px";
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
   return (
     <div
-      className={`sidebar ${isSidebarCollapsed ? "collapsed" : ""} bg-slate-50`}
+      className={`sidebar ${
+        isSidebarCollapsed ? "collapsed" : ""
+      } bg-slate-50  `}
     >
-      <div className="flex flex-row relative justify-between items-start ">
-        <div
-          className={`sidebar__logo ml-8 flex flex-row space-x-4 ${
-            isSidebarCollapsed ? "hidden" : ""
-          }`}
-        >
+      <div className="flex flex-row relative justify-between items-start  ">
+        {/* Logo -- Start */}
+        <div className="sidebar__logo ml-8 relative  flex flex-row space-x-2 ">
           <div className="flex-shrink-0  ">
-            <img className="h-12 w-12" src={Logo} alt="Your Company" />
+            <img
+              className={`ml-2 h-8 w-8 ${isSidebarCollapsed ? "" : ""}`}
+              src={Logo}
+              alt="Your Company"
+            />
           </div>
           <div>
-            <h2 className="text-xl font-sans font-bold text-gray-900 ">
-              Source Bank
+            <h2
+              className={`text-lg font-poppins font-semibold text-secondBlack ${
+                isSidebarCollapsed ? "hidden" : ""
+              }`}
+            >
+              Staff Pulse
             </h2>
           </div>
         </div>
+        {/* Logo -- end */}
 
+        {/* Arrow -- start */}
         <div
-          className=" relative text-xl mt-4 p-5 ml-8"
+          className="relative text-2xl mt-4 p-5 -right-12 top-80 group transition-all duration-300 ease-in-out cursor-pointer "
           onClick={toggleSidebar}
         >
-          <FiMenu />
+          <div className="absolute group-hover:opacity-0 scale-105 bg-white rotate-90 transition-all duration-300 ease-in-out">
+            <MdOutlineHorizontalRule />
+          </div>
+          <div className="group-hover:opacity-100 transition-all duration-300 ease-in-out">
+            {isSidebarCollapsed ? <IoIosArrowForward /> : <IoIosArrowBack />}
+          </div>
         </div>
+
+        {/* Arrow -- end */}
       </div>
 
+      <p className="ml-5 mt-8 text-sm text-gray-400">Dashboard</p>
       <div
         ref={sidebarRef}
-        className="sidebar__menu md:flex md:flex-col hidden "
+        className="sidebar__menu mt-5 md:flex md:flex-col hidden "
       >
+        {/* Indicator */}
         <div
           ref={indicatorRef}
-          className="sidebar__menu__indicator bg-indigo-500 "
+          className="sidebar__menu__indicator  bg-secondBlack "
           style={{
-            transform: `translateX(-50%) translateY(${
+            transform: `translateX(-55%) translateY(${
               activeIndex * stepHeight
             }px)`,
           }}
-        ></div>
+        />
+
         {sidebarNavItems.map((item, index) => (
           <Link to={item.to} key={index}>
             <div
-              className={`sidebar__menu__item  ${
+              className={`sidebar__menu__item ml-2 ${
                 activeIndex === index ? "active" : ""
               }`}
             >
               <div
-                className={`sidebar__menu__item__icon mr-4 ${
+                className={`sidebar__menu__item__icon  ${
                   isSidebarCollapsed ? "" : ""
                 }`}
               >

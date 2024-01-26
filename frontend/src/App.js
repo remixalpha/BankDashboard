@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard.jsx";
 import "./App.css";
 
+
 function App() {
   return (
     <BrowserRouter>
