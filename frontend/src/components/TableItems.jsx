@@ -1,26 +1,24 @@
-import { Dialog, Transition } from "@headlessui/react";
-import { Table } from "@radix-ui/themes";
 import React, { Fragment, useEffect, useRef, useState } from "react";
 import defaultProfileImage from "../assets/Images/Person.png";
 import DropDown from "./DropDown";
+
+// Components
+import { Dialog, Transition } from "@headlessui/react";
+import { Callout, Table } from "@radix-ui/themes";
+import { Pagination } from "antd";
+
 // Icon
+import { CheckIcon } from "@heroicons/react/20/solid";
 import {
   ExclamationTriangleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { Pagination } from "antd";
-// Icons
 import { BiImageAdd } from "react-icons/bi";
 import { LuPencil } from "react-icons/lu";
 import { PiUploadSimpleThin, PiXLight } from "react-icons/pi";
 
 // Api
-import {
-  deleteData,
-  fetchEmployeeData,
-  fetchEmployeeDataWithLimit,
-  updateData,
-} from "../api/api";
+import { deleteData, fetchEmployeeDataWithLimit, updateData } from "../api/api";
 
 export default function TableItems({ pageSize, searchQuery }) {
   const [open, setOpen] = useState(false);
@@ -45,7 +43,7 @@ export default function TableItems({ pageSize, searchQuery }) {
   const [fileInputKey, setFileInputKey] = useState(0);
 
   // For Message Display
-  const [showMessage, setShowMessage] = useState(true);
+  const [showMessage, setShowMessage] = useState(false);
   const [isMessageShown, setIsMessageShown] = useState(false);
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -101,6 +99,14 @@ export default function TableItems({ pageSize, searchQuery }) {
   // API Part
 
   useEffect(() => {
+    if (isMessageShown) {
+      const reloadTimeout = setTimeout(() => {
+        window.location.reload();
+      }, 5000);
+
+      return () => clearTimeout(reloadTimeout);
+    }
+
     // Fetch Data
     const fetchData = async () => {
       try {
@@ -119,17 +125,28 @@ export default function TableItems({ pageSize, searchQuery }) {
 
     // Call the fetchData function
     fetchData();
+
+    // For Populating the fields
     console.log("Data fetched To Populate :", empIdToUpdate);
     // Populate input fields when empIdToUpdate changes
     if (empIdToUpdate) {
-      setName(empIdToUpdate.name || "");
-      setEmail(empIdToUpdate.email || "");
-      setPhoneNo(empIdToUpdate.phoneNumber || "");
-      setGender(empIdToUpdate.gender || "");
+      setName(empIdToUpdate.empName || "");
+      setEmail(empIdToUpdate.empEmail || "");
+      setPhoneNo(empIdToUpdate.empPhoneNo || "");
+      // Set gender based on empGender value
+      if (empIdToUpdate.EmpGender === "male") {
+        setGender("male");
+      } else if (empIdToUpdate.EmpGender === "female") {
+        setGender("female");
+      } else if (empIdToUpdate.EmpGender === "transgender") {
+        setGender("transgender");
+      } else {
+        setGender(""); // Default if empGender is not provided or invalid
+      }
       // Assuming there's an image property in empIdToUpdate, update accordingly
-      setImage(empIdToUpdate.image || "https://via.placeholder.com/150");
+      setImage("../assets/Images/Person.png");
     }
-  }, [currentPage, pageSize, searchQuery, empIdToUpdate]);
+  }, [isMessageShown, currentPage, pageSize, searchQuery, empIdToUpdate]);
 
   const handleDelete = async (employeeId) => {
     try {
@@ -174,7 +191,7 @@ export default function TableItems({ pageSize, searchQuery }) {
 
   const handleUpdate = async () => {
     try {
-      console.log("Updated employee with ID:", empIdToUpdate.empId);
+      console.log("Updated employee with ID:", empIdToUpdate.empId); // Confirm that empIdToUpdate has the correct employeeId
 
       const updatedEmployeeData = {
         name: Name,
@@ -183,9 +200,13 @@ export default function TableItems({ pageSize, searchQuery }) {
         gender: Gender,
       };
 
-      const response = await updateData(empIdToUpdate, updatedEmployeeData);
-      const updatedData = await fetchEmployeeData();
+      const response = await updateData(
+        empIdToUpdate.empId,
+        updatedEmployeeData
+      ); // Pass empIdToUpdate.empId instead of empIdToUpdate
+      //  const updatedData = await getDataById();
 
+      //  console.log("Updated data Retrived:", updatedData.data);
       console.log("Response data:", response);
       if (response.status === "SUCCESS") {
         setIsSuccess(true);
@@ -195,8 +216,8 @@ export default function TableItems({ pageSize, searchQuery }) {
         setMessage(response.message || "Something went wrong");
       }
 
-      setData(updatedData.data);
-      setTotalCount(updatedData.totalCount);
+      // setData(updatedData.data);
+      // setTotalCount(updatedData.totalCount);
     } catch (error) {
       console.error("Error updating menu:", error);
     } finally {
@@ -215,58 +236,76 @@ export default function TableItems({ pageSize, searchQuery }) {
 
   return (
     <>
-      <div className="container mx-auto space-y-4">
-        <div className="">
-          <Table.Root variant="ghost">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Image</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Phone No</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Gender</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell> </Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-
-            <Table.Body className="relative font-poppins ">
-              {data.map((employee) => (
-                <Table.Row
-                  className="hover:bg-gray-50  cursor-pointer"
-                  key={employee.empId}
-                >
-                  <Table.Cell className="">
-                    {/* Render the image based on employee's name */}
-                    <img
-                      src={`path-to-your-upload-folder/${employee.empName}.jpg`} // Replace with the correct path and file extension
-                      alt={employee.empName}
-                      onError={(e) => {
-                        // Handle image not found by displaying a default image
-                        e.target.src = defaultProfileImage;
-                      }}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                  </Table.Cell>
-                  <Table.Cell className="">{employee.empName}</Table.Cell>
-                  <Table.Cell className="">{employee.empEmail}</Table.Cell>
-                  <Table.Cell className="">{employee.empPhoneNo}</Table.Cell>
-                  <Table.Cell className="">{employee.EmpGender}</Table.Cell>
-                  <Table.Cell>
-                    <DropDown
-                      onEdit={handleEditMenuOpen}
-                      onDelete={handleDeleteMenuOpen}
-                      employeeId={employee.empId}
-                      employee={employee}
-                    />
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+      {showMessage && (
+        <div className="absolute bottom-[25rem] right-[10rem] flex justify-center items-center scale-110 h-full w-full">
+          {isSuccess ? (
+            <Callout.Root color="green">
+              <Callout.Icon>
+                <CheckIcon className="h-5 w-5" />
+              </Callout.Icon>
+              <Callout.Text>{message}</Callout.Text>
+            </Callout.Root>
+          ) : (
+            <Callout.Root color="red" role="alert">
+              <Callout.Icon>
+                <ExclamationTriangleIcon className="h-5 w-5" />
+              </Callout.Icon>
+              <Callout.Text>{message}</Callout.Text>
+            </Callout.Root>
+          )}
         </div>
+      )}
+      <div className="container mx-auto space-y-4">
+        <Table.Root variant="ghost">
+          <Table.Header>
+            <Table.Row className="text-white">
+              <Table.ColumnHeaderCell>Image</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Phone No</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Gender</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell> </Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+
+          <Table.Body className="relative font-poppins">
+            {data.map((employee) => (
+              <Table.Row
+                className="row hover:bg-white transition-all duration-300 ease-in-out cursor-pointer"
+                key={employee.empId}
+              >
+                <Table.Cell className="hover:rounded-l-2xl">
+                  {/* Render the image based on employee's name */}
+                  <img
+                    src={`path-to-your-upload-folder/${employee.empName}.jpg`} // Replace with the correct path and file extension
+                    alt={employee.empName}
+                    onError={(e) => {
+                      // Handle image not found by displaying a default image
+                      e.target.src = defaultProfileImage;
+                    }}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                </Table.Cell>
+                <Table.Cell className="">{employee.empName}</Table.Cell>
+                <Table.Cell className="">{employee.empEmail}</Table.Cell>
+                <Table.Cell className="">{employee.empPhoneNo}</Table.Cell>
+                <Table.Cell className="">{employee.EmpGender}</Table.Cell>
+                <Table.Cell className="row-hover:rounded-r-2xl ">
+                  <DropDown
+                    onEdit={handleEditMenuOpen}
+                    onDelete={handleDeleteMenuOpen}
+                    employeeId={employee.empId}
+                    employee={employee}
+                  />
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
       </div>
-      <div className="mt-4 items-end justify-end flex">
+      <div className="mt-4 items-end justify-end flex ">
         <Pagination
+          className="bg-white p-2 rounded-xl shadow-shadow-500 shadow-xl"
           current={currentPage}
           onChange={onChange}
           pageSize={pageSize}

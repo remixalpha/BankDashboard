@@ -1,0 +1,42 @@
+.main-container {
+  position: relative;
+}
+
+.main-container::before,
+.main-container::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+}
+
+/* Define the styles for the circles */
+.main-container::before {
+  content: "";
+  width: 300px; /* Adjust the size of the circles */
+  height: 300px; /* Adjust the size of the circles */
+  background-color: rgba(8, 65, 223, 0.1); /* Adjust the color and opacity */
+  border-radius: 50%; /* To make it a circle */
+  top: 50px; /* Adjust the positioning */
+  left: 50px; /* Adjust the positioning */
+  animation: move-circles 10s linear infinite alternate; /* Animation for movement */
+  z-index: 0;
+}
+
+.main-container::after {
+  content: "";
+  width: 190px; /* Adjust the size of the circles */
+  height: 190px; /* Adjust the size of the circles */
+  background-color: rgba(15, 116, 231, 0.1); /* Adjust the color and opacity */
+  border-radius: 50%; /* To make it a circle */
+  top: 50%; /* Adjust the positioning */
+  right: 85px; /* Adjust the positioning */
+  animation: move-circles 15s linear infinite alternate; /* Animation for movement */
+  z-index: 0;
+}
+
+/* Keyframes for circle movement animation */
+@keyframes move-circles {
+  to {
+    transform: translateX(50px); /* Adjust the movement distance */
+  }
+}

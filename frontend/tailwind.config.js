@@ -156,7 +156,8 @@ export const theme = {
     buttonColor: "#1b3bbb",
     primaryBlack: "#0A0A0A",
     secondBlack: "#232323",
-    thirdBlack: "#696969",
+    thirdBlack:"#3b3b3b",
+    fourthBlack: "#696969",
 
     slate: {
       50: "#f8fafc",

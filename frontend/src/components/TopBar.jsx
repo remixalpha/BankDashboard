@@ -101,9 +101,9 @@ export default function TopBar({ onSearch }) {
                           leaveFrom="transform opacity-100 scale-100"
                           leaveTo="transform opacity-0 scale-95"
                         >
-                          <Menu.Items className="absolute  right-0 z-50 mt-8 w-64 origin-top-right rounded-2xl py-4 px-2  bg-secondBlack shadow-lg ">
+                          <Menu.Items className="absolute  right-0 z-50 mt-8 w-64 origin-top-right rounded-2xl py-4 px-2 backdrop-blur-xl  bg-white/30 shadow-lg ring-1 ring-black/5 ">
                             <Menu.Item>
-                              <div className="nav-item  top-16 bg-secondBlack pt-2 rounded-lg ">
+                              <div className="nav-item  top-16 ">
                                 <div className="flex flex-col text-center  items-center justify-center gap-5  border-color border-b-1 pb-6">
                                   <img
                                     className=" object-cover rounded-full h-24 w-24"
@@ -111,7 +111,7 @@ export default function TopBar({ onSearch }) {
                                     alt="user-profile"
                                   />
                                   <div>
-                                    <p className="font-semibold text-white text-xl">
+                                    <p className="font-semibold text-secondBlack text-xl">
                                       Micheal Robert
                                     </p>
                                     <p className="text-gray-500 text-sm">
@@ -133,7 +133,7 @@ export default function TopBar({ onSearch }) {
                                     active
                                       ? "bg-white text-secondBlack scale-110 shadow-xl rounded-lg"
                                       : "",
-                                    "flex flex-row justify-start items-center px-4  mx-4 my-2  text-sm text-lightPrimary  rounded-lg transition-all duration-300 ease-in-out"
+                                    "flex flex-row justify-start items-center px-4  mx-4 my-2  text-sm text-secondBlack   rounded-lg transition-all duration-300 ease-in-out"
                                   )}
                                 >
                                   <BsPerson
@@ -153,7 +153,7 @@ export default function TopBar({ onSearch }) {
                                     active
                                       ? "bg-white text-secondBlack scale-110 shadow-xl rounded-lg"
                                       : "",
-                                    "flex flex-row justify-start items-center px-4  mx-4 my-2  text-sm text-lightPrimary  rounded-lg transition-all duration-300 ease-in-out"
+                                    "flex flex-row justify-start items-center px-4  mx-4 my-2  text-sm text-secondBlack   rounded-lg transition-all duration-300 ease-in-out"
                                   )}
                                 >
                                   <IoSettingsOutline
@@ -173,7 +173,7 @@ export default function TopBar({ onSearch }) {
                                     active
                                       ? "bg-white text-secondBlack scale-110 shadow-xl rounded-lg"
                                       : "",
-                                    "flex flex-row justify-start items-center px-4  mx-4 my-2  text-sm text-lightPrimary  rounded-lg transition-all duration-300 ease-in-out"
+                                    "flex flex-row justify-start items-center px-4  mx-4 my-2  text-sm text-secondBlack  rounded-lg transition-all duration-300 ease-in-out"
                                   )}
                                 >
                                   <PiSignOut

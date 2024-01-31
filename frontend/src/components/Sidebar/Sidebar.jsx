@@ -99,7 +99,7 @@ export default function Sidebar() {
           </div>
           <div>
             <h2
-              className={`text-lg font-poppins font-semibold text-secondBlack ${
+              className={`text-lg font-poppins font-semibold text-lightPrimary ${
                 isSidebarCollapsed ? "hidden" : ""
               }`}
             >
@@ -133,7 +133,7 @@ export default function Sidebar() {
         {/* Indicator */}
         <div
           ref={indicatorRef}
-          className="sidebar__menu__indicator  bg-secondBlack "
+          className="sidebar__menu__indicator  bg-thirdBlack"
           style={{
             transform: `translateX(-55%) translateY(${
               activeIndex * stepHeight

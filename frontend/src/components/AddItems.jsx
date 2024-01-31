@@ -27,7 +27,7 @@ export default function AddItems({ open, setOpen }) {
   const [fileInputKey, setFileInputKey] = useState(0);
 
   // For Message Display
-  const [showMessage, setShowMessage] = useState(true);
+  const [showMessage, setShowMessage] = useState(false);
   const [isMessageShown, setIsMessageShown] = useState(false);
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -113,11 +113,14 @@ export default function AddItems({ open, setOpen }) {
   };
 
   useEffect(() => {
+    // Check if the message is shown
     if (isMessageShown) {
+      // Set a timeout to reload the page after 5000 milliseconds (5 seconds)
       const reloadTimeout = setTimeout(() => {
-        window.location.reload();
+        window.location.reload(); // Reload the page
       }, 5000);
 
+      // Clean up the timeout to prevent memory leaks
       return () => clearTimeout(reloadTimeout);
     }
   }, [isMessageShown]);
@@ -125,7 +128,7 @@ export default function AddItems({ open, setOpen }) {
   return (
     <>
       {showMessage && (
-        <div className="absolute bottom-[13rem] right-55 flex justify-center items-center scale-110 h-full w-full">
+        <div className="absolute bottom-[25rem] right-[10rem] flex justify-center items-center scale-110 h-full w-full">
           {isSuccess ? (
             <Callout.Root color="green">
               <Callout.Icon>
