@@ -18,13 +18,13 @@ const sidebarNavItems = [
   {
     display: "Employee Directory",
     icon: <RiMastercardLine />,
-    to: "",
+    to: "/uploadings",
     section: "Employee",
   },
   {
     display: "Attendance",
     icon: <FiLayout />,
-    to: "",
+    to: "/employeeEditor",
     section: "Attendance",
   },
   {

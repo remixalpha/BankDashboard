@@ -137,7 +137,7 @@ export const uploadExcelFile = async (file) => {
     const formData = new FormData();
     formData.append("file", file); // 'file' should match the parameter name expected by your backend
 
-    const response = await axios.post(`${API_ENDPOINTS}upload`, formData, {
+    const response = await axios.post(`${API_ENDPOINTS}uploadExcel`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -159,17 +159,28 @@ export const uploadExcelFile = async (file) => {
 
 export const uploadPdfFile = async (file) => {
   try {
+    // Log that the file is being sent to the backend
+    console.log("Sending file to the backend:", file.name);
+
     // Create FormData object to append the file
     const formData = new FormData();
     formData.append("file", file); // 'file' should match the parameter name expected by your backend
 
+    // Log the content of the FormData object
+    for (var pair of formData.entries()) {
+      console.log(`${pair[0]}, ${pair[1]}`);
+    }
+
     // Send POST request to the backend API
-    const response = await axios.post(`${API_ENDPOINTS}process`, formData, {
+    const response = await axios.post(`${API_ENDPOINTS}processPdf`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
       responseType: "blob", // Ensure response type is set to 'blob' to handle binary data
     });
+
+    // Log success message if the file is uploaded successfully
+    console.log("File uploaded successfully:", response);
 
     // Get the blob data from the response
     const blob = new Blob([response.data], { type: "application/pdf" });
@@ -195,40 +206,67 @@ export const uploadPdfFile = async (file) => {
   }
 };
 
-export const uploadCopyPdfFile = async (file) => {
+export const saveText = async (text) => {
   try {
-    // Create FormData object to append the file
-    const formData = new FormData();
-    formData.append("file", file); // 'file' should match the parameter name expected by your backend
+    console.log("Text to be saved:", text); // Log the text before sending the request
+    const response = await axios.post(
+      `${API_ENDPOINTS}SaveText`,
+      { content: text },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    // Send POST request to the backend API
-    const response = await axios.post(`${API_ENDPOINTS}copy`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      responseType: "blob", // Ensure response type is set to 'blob' to handle binary data
-    });
-
-    // Get the blob data from the response
-    const blob = new Blob([response.data], { type: "application/pdf" });
-
-    // Create a URL for the blob object
-    const url = window.URL.createObjectURL(blob);
-
-    // Create an anchor element to trigger the download
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "modified.pdf"; // Set the desired filename for the downloaded file
-
-    // Trigger the click event to initiate the download
-    document.body.appendChild(a);
-    a.click();
-
-    // Clean up after download
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url); // Revoke the URL to release memory
+    if (response.data.status === "SUCCESS") {
+      console.log("Text saved successfully:", response.data.message);
+      return response.data;
+    } else {
+      console.error("Error saving text:", response.data.message);
+      throw new Error(response.data.message);
+    }
   } catch (error) {
-    console.error("Error uploading PDF file:", error.message);
+    console.error("Error saving text:", error.message);
+    throw error;
+  }
+};
+
+export const getText = async () => {
+  try {
+    const response = await axios.get(`${API_ENDPOINTS}GetText`);
+    if (response.data.status === "SUCCESS") {
+      console.log("Text fetched successfully:", response.data);
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching text:", error.message);
+    throw error;
+  }
+};
+
+export const updateText = async (textId, newText) => {
+  try {
+    console.log("Text to be updated:", newText); // Log the text before sending the request
+    const response = await axios.put(
+      `${API_ENDPOINTS}UpdateText/${textId}`,
+      { content: newText },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.status === "SUCCESS") {
+      console.log("Text updated successfully:", response.data.message);
+      return response.data;
+    } else {
+      console.error("Error updating text:", response.data.message);
+      throw new Error(response.data.message);
+    }
+  } catch (error) {
+    console.error("Error updating text:", error.message);
     throw error;
   }
 };

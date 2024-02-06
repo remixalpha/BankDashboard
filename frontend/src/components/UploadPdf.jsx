@@ -39,8 +39,14 @@ const UploadPdf = () => {
         return;
       }
 
+      // Log the selected file name
+      console.log("Selected file:", selectedFile.name);
+
       // Call the function to upload the selected file
-      await uploadPdfFile(selectedFile);
+      const response = await uploadPdfFile(selectedFile);
+
+      // Log that the file has been passed to the uploadPdfFile function
+      console.log("File passed to uploadPdfFile function:", response);
 
       // Set success message
       setIsSuccess(true);
@@ -95,7 +101,7 @@ const UploadPdf = () => {
         </div>
       )}
 
-      <div className="flex space-y-10 flex-col justify-center h-4/5  w-2/6 mt-[5rem] ml-[20rem] p-12 rounded-xl border bg-lightPrimary shadow-xl  shadow-shadow-600 ">
+      <div className="flex space-y-10 flex-col justify-center h-4/5  w-2/6 mt-[5rem]  p-12 rounded-xl border bg-lightPrimary shadow-xl  shadow-shadow-600 ">
         {/* Input field for file selection */}
         {/* <input type="file" accept=".xlsx" onChange={handleFileChange} /> */}
         <div className="flex justify-center cursor-pointer ">
